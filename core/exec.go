@@ -63,5 +63,11 @@ func execNormalCommand(db *DB, cmdArgs [][]byte) redis.Reply {
 
 func execSpecialCmd(c redis.Connection, cmdLine [][]byte, cmdName string, db *DB) (redis.Reply, bool) {
 	// TODO
+	if cmdName == "subscribe" {
+		if len(cmdLine) < 2 {
+			return reply.MakeArgNumErrReply("subscribe"), true
+		}
+		//TODO
+	}
 	return nil, true
 }

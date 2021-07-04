@@ -66,6 +66,18 @@ const (
 	aofQueueSize = 1 << 16
 )
 
+// Close graceful shutdown database
+func (db *DB) Close() {
+	if db.aofFile != nil {
+		close(db.aofChan)
+		<-db.aofFinished // wait for aof finished
+		err := db.aofFile.Close()
+		if err != nil {
+			logger.Warn(err)
+		}
+	}
+}
+
 // MakeDB create DB instance and start it
 func MakeDB() *DB {
 	db := &DB{
@@ -148,4 +160,15 @@ func (db *DB) RWLocks(writeKeys []string, readKeys []string) {
 // RWUnLocks unlock keys for writing and reading
 func (db *DB) RWUnLocks(writeKeys []string, readKeys []string) {
 	db.locker.RWUnLocks(writeKeys, readKeys)
+}
+
+// Flush clean database
+func (db *DB) Flush() {
+	db.stopWorld.Add(1)
+	defer db.stopWorld.Done()
+
+	db.data = dict.MakeConcurrent(dataDictSize)
+	db.ttlMap = dict.MakeConcurrent(ttlDictSize)
+	db.locker = lock.Make(lockerSize)
+
 }

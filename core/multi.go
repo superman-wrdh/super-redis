@@ -2,8 +2,14 @@ package core
 
 import (
 	"strings"
+	"super-redis/datastruct/set"
 	"super-redis/interface/redis"
 	"super-redis/redis/reply"
+)
+
+var forbiddenInMulti = set.Make(
+	"flushdb",
+	"flushall",
 )
 
 // EnqueueCmd puts command line into `multi` pending queue
